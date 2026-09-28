@@ -2,6 +2,8 @@
 
 This page contains the setup details behind the short requirements list in the [README](../README.md). The project checks for dependencies, but it does not install them automatically.
 
+The demo was built and tested on Linux. Windows users should run it inside WSL 2 and enable Docker Desktop's WSL integration so the Linux tooling and Docker daemon are available in the same environment.
+
 ## Local tools
 
 Install these tools using their official documentation:

@@ -27,6 +27,8 @@ You need:
 
 See [Prerequisites](docs/prerequisites.md) for installation, Azure permissions, ports, costs, and troubleshooting.
 
+The demo was built and tested on Linux. On Windows, use WSL 2 with Docker Desktop's WSL integration enabled.
+
 ## Run the demo
 
 ### 1. Clone the repository

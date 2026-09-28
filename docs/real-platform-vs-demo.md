@@ -4,56 +4,19 @@ This document explains which parts of the Conduit architecture are represented f
 
 ## Real platform architecture
 
-The intended platform has a remote execution plane. The control plane records developer intent, while a worker changes the IaC repository and opens a pull request. CI/CD then builds the application image, publishes it to ACR, applies the infrastructure, and deploys the application.
+The intended platform separates the Django control plane from a remote execution plane.
 
 ![Real platform architecture](images/real-platform.png)
 
-This diagram shows the intended separation between the Django control plane and the remote execution plane. The worker renders Terraform, reports status back to Django, and opens a pull request; CI/CD is responsible for the downstream execution.
-
-It should show:
-
-```text
-CLI
-  → Microsoft Entra ID
-  → Django control plane
-  → Redis/Celery
-  → remote worker
-  → IaC repository and pull request
-  → CI/CD pipeline
-  → ACR and Azure Container Apps
-```
-
-The application source repository should feed the CI/CD image build. The worker should report status back to Django, and Django should not appear as the component that runs Terraform.
+The worker and CI/CD system handle the downstream repository, infrastructure, and image workflows.
 
 ## This demo
 
-The local demo keeps the same control-plane boundary but replaces remote integrations with local commands:
-
-```text
-CLI
-  → Django API
-  → Redis/Celery
-  → host-side Python worker
-  → generated local Terraform
-  → make iac-pipeline
-  → Azure infrastructure
-  → make deploy-app
-  → ACR and Container App
-```
+The local demo keeps the same control-plane boundary but replaces remote execution with local services and commands.
 
 ![This demo's local architecture](images/demo-platform.png)
 
-This diagram shows the reproducible local version: Django and Redis/Celery run in Docker, the worker runs on the developer's workstation, and Terraform is applied locally with the developer's Azure CLI credentials.
-
-It should make these boundaries visible:
-
-- Django and Redis run in Docker Compose;
-- the worker runs on the developer's host;
-- the worker generates local Terraform but does not execute it;
-- `make iac-pipeline` runs Terraform with the developer's Azure CLI session;
-- `make deploy-app` builds the bundled `examples/simple-api`, pushes it to ACR, and updates the Container App;
-- no pull request or remote CI/CD pipeline is created;
-- `curl` verifies the real HTTP endpoint in Azure.
+The worker generates local Terraform; `make iac-pipeline` applies it, and `make deploy-app` builds and publishes the demo image separately.
 
 ## Comparison
 
