@@ -54,7 +54,7 @@ az account set --subscription "<subscription-id>"
 make setup
 ```
 
-This verifies dependencies, interactively applies the bootstrap Terraform, creates the Entra registrations and shared Basic ACR, generates local configuration, starts Django/Redis, starts the host-side worker, and installs `conduit` under `~/.local/bin/conduit`.
+This verifies dependencies, interactively applies the bootstrap Terraform, creates the Entra registrations and shared Basic ACR, generates local configuration, starts Django/Redis, starts the host-side worker in the background, and installs `conduit` under `~/.local/bin/conduit`. The bootstrap may take a few minutes while Azure creates the shared resources.
 
 Create an administrator for Django Admin:
 
@@ -69,7 +69,7 @@ conduit login
 conduit whoami
 ```
 
-The CLI uses browser-based Microsoft Entra authentication. Tokens are stored in the operating-system credential store.
+`conduit login` opens your browser automatically so you can sign in to your Microsoft Entra/Azure account. Tokens are stored in the operating-system credential store.
 
 ### 5. Declare infrastructure intent
 
@@ -91,6 +91,8 @@ The wizard asks for:
 
 These choices describe how the platform should run the application. The wizard does not ask for a source repository, Git commit, Dockerfile, image, or Azure credential.
 
+After the request is accepted, the background worker consumes the job and renders the Terraform files for the requested infrastructure under `infra/workloads/`.
+
 The request can be inspected with:
 
 ```bash
@@ -104,11 +106,13 @@ conduit app describe <application-name>
 make iac-pipeline
 ```
 
-The worker has already generated Terraform under `infra/workloads/`. This command formats, initializes, validates, and plans the workload, then asks for confirmation before applying it with the developer's Azure CLI session.
+The worker has already generated Terraform under `infra/workloads/`. This command formats, initializes, validates, and plans the workload, then asks for confirmation before applying it with the developer's Azure CLI session. Creating the Azure Container Apps Environment can take around 15 minutes; keep the command running unless Terraform reports an error.
 
 It creates the resource group, Container Apps Environment, Log Analytics workspace, managed identity, ACR pull permission, and a dormant Container App using a public placeholder image.
 
 ### 7. Build and deploy the demo API
+
+The bundled `examples/simple-api` is intentionally a tiny application. Its purpose is to give the infrastructure a real HTTP workload so you can verify that Azure is serving the image successfully; it is not meant to represent a production application.
 
 ```bash
 make deploy-app
@@ -127,6 +131,8 @@ The expected response is:
 ```json
 {"application":"Conduit demo API","status":"ok"}
 ```
+
+If you receive this response, congratulations: the demo completed successfully. You declared infrastructure intent, generated and applied Terraform, built and published an image, and reached the running application through its Azure URL.
 
 The two commands have separate responsibilities:
 
